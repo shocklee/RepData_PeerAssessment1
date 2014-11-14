@@ -1,0 +1,232 @@
+---
+title: "Project1"
+author: "Mark Shocklee"
+date: "Saturday, November 08, 2014"
+output: html_document
+---
+
+## Setup
+
+```{r load_packages, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+```
+
+## Loading and preprocessing the data
+
+Show any code that is needed to:
+
+* Load the data (i.e. read.csv())
+* Process/transform the data (if necessary) into a format suitable for your analysis
+
+The file for this project was downloaded on 11/8/2014 10:17 AM from http://github.com/rdpeng/RepData_PeerAssessment1.
+
+```{r load_and_preprocess, echo = TRUE, warning=FALSE}
+dir.create("data")
+unzip("activity.zip", exdir = "./data", overwrite=TRUE)
+activity <- read.csv("./data/activity.csv", na.strings = "NA")
+dir.create("figure")
+```
+
+Get some basic information about the file.
+
+```{r basic_data_info, echo = TRUE}
+summary(activity)
+head(activity)
+tail(activity)
+```
+
+## Processing prior to Imputing Missing Values
+
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+* What is mean total number of steps taken per day?
+```{r calculate_per_day_values, echo = TRUE}
+total_steps <- aggregate(steps ~ date, data = activity, FUN = sum)
+# Based upon the comments by the TA in the Discussion Forums, these calculations
+# are not used.
+mean_steps <- aggregate(steps ~ date, data = activity, FUN = mean)
+median_steps <- aggregate(steps ~ date, data = activity, FUN = median)
+# The forums indicate that these are the correct calculations.
+mean_total_steps <- mean(total_steps$steps)
+median_total_steps <- median(total_steps$steps)
+```
+
+* Make a histogram of the total number of steps taken each day
+
+```{r total_steps_histogram, echo = TRUE}
+hist(total_steps$steps, 
+     breaks = nrow(total_steps), 
+     main = "Total Number of Steps Taken Each Day", 
+     xlab = "Steps per Day")
+dev.copy(png, 
+         filename = "./figure/plot1.png", 
+         width = 480, 
+         height = 480, 
+         units = "px", 
+         bg = "white")
+dev.off()
+```
+
+* Calculate and report the mean and median total number of steps taken per day
+
+The mean of total number of steps taken per day is `r format(mean_total_steps, big.mark = ",")`
+
+The median of total number of steps taken per day is `r format(median_total_steps, big.mark = ",")`
+
+* What is the average daily activity pattern?
+
+* Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+```{r time_series, echo = TRUE}
+time_series_average <- aggregate(steps ~ interval, data = activity, FUN = mean)
+
+plot(x = time_series_average$interval,
+y = time_series_average$steps,
+type = 'l',
+main = "Average Daily Activity Pattern", 
+xlab = "5-minute Interval", 
+ylab = "Average Number of Steps Taken")
+
+```
+
+* Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r max_time_series, echo = TRUE}
+max_interval <- time_series_average[which.max(time_series_average$steps),
+                                   "interval"]
+```
+
+The 5-minute interval that contains the maximum number of steps is `r format(max_interval, big.mark = ",")`
+
+Comments:  I didn't really like the whole 5-minute interval thing.  Given that
+           there should be 12 intervals per hour and 288 intervals per day, we
+           should be able to guess, within a period of 5 minutes, when the 
+           device was turned on and then convert the interval to a time of day.
+           It would have been more interesting to figure out when the user was
+           most active and see if we could determine any other activity patterns
+           from the data.
+
+## Imputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+* Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+
+```{r count_missing, echo = TRUE}
+missing_count <- sum(is.na(activity$steps)) #This better match the summary
+```
+
+The total number of missing values is `r format(missing_count, big.mark = ",")`
+
+* Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+Comments:  This was an interesting part of the assignment, at least from a
+           research perspective (it remains to be seen whether I can actually
+           use any of the items I discovered.)  There seems to be several
+           missing data imputation packages that are available:
+           
+        Visualization and Imputation of Missing values -- Templ, M., Alfons, A., & Kowarik, A. (2010a). Package available at http://cran.r-project.org/web/packages/VIM/VIM.pdf
+           
+        Amelia II -- Honaker, J., King, G., & Blackwell, M. (2010a). Package available at http://cran.r-project.org/web/packages/Amelia/Amelia.pdf
+           
+        mvnmle -- Gross, K., & Bates, D. (2009). Package available at http://cran.r-project.org/web/packages/mvnmle/mvnmle.pdf
+           
+        k nearest neighbor (knn) -- Kim, K., & Yi, G. (2009). Package available at http://cran.r-project.org/web/packages/SeqKnn/SeqKnn.pdf
+        
+        Stack Overflow had several examples of doing various things to replace missing values -- http://stackoverflow.com 
+
+* Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+I'm going to try using the Amelia II package just to see how it works.  The documentation indicates that there is a user interfact that is used to generate the output files.  I hope that I won't be penalized if that is the case and I just get an output file to use.
+
+```{r amelia_imputation, echo = TRUE}
+require(Amelia) #Going to try this to see what happens.
+activity$date<-as.Date(activity$date)
+amelia_out <- amelia(activity, m = 5, p2s = 1, )
+summary(amelia_out)
+missmap(amelia_out)
+summary(amelia_out$imputations[[5]])
+```
+
+**Well, that was an interesting experiement.  Somehow I think that if I complete the assignment with the Amelia II output and plot negative steps, someone will probably give me a poor evaluation.  I'm going to leave this in because it does show some intersting data (and maybe that I don't know what I'm doing), but from this point on I will be doing something more conventional.**
+
+```{r conventional_imputation, echo = TRUE}
+imputed_activity <- activity #Make a copy
+
+```
+
+* Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps? 
+
+```{r imputed_total_steps_histogram, echo = TRUE}
+imputed_total_steps <- aggregate(steps ~ date, 
+                                 data = imputed_activity, 
+                                 FUN = sum)
+imputed_mean_total_steps <- mean(imputed_total_steps$steps)
+imputed_median_total_steps <- median(imputed_total_steps$steps)
+hist(imputed_total_steps$steps, 
+     breaks = nrow(total_steps), 
+     main = "Total Number of Steps Taken Each Day, Imputed", 
+     xlab = "Imputed Steps per Day")
+dev.copy(png, 
+         filename = "./figure/plot2.png", 
+         width = 480, 
+         height = 480, 
+         units = "px", 
+         bg = "white")
+dev.off()
+```
+
+The imputed mean of total number of steps taken per day is `r format(imputed_mean_total_steps, big.mark = ",")` and the difference is 'r imputed_mean_total_steps - mean_total_steps`
+
+The imputed median of total number of steps taken per day is `r format(imputed_median_total_steps, big.mark = ",")` and the difference is 'r imputed_median_total_steps - median_total_steps`
+
+* Are there differences in activity patterns between weekdays and weekends?
+
+For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+* Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r weekday_weekend_factor, echo = TRUE}
+imputed_activity$date <- as.Date(imputed_activity$date)
+imputed_activity$dayofweek <- weekdays(imputed_activity$date)
+imputed_activity$weekend <- factor(imputed_activity$dayofweek 
+                                   %in% c("Saturday", "Sunday"), 
+                                   labels = c("Weekday", "Weekend"))
+```
+
+* Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+```{r plot_weekend_weekday_activity_pattern, echo = TRUE}
+activity_by_interval <- aggregate(imputed_activity$steps,
+                                  list("interval" = imputed_activity$interval,
+                                       "weekend" = imputed_activity$weekend),
+                                  mean, na.rm = TRUE, 
+                                  simplify = TRUE)
+require(lattice)
+xyplot(activity_by_interval$x ~ activity_by_interval$interval 
+       | activity_by_interval$weekend, 
+       type = "l",
+       layout = c(1,2),
+       xlab = "5-minute Interval",
+       ylab = "Number of Steps",
+       main = "Activity Patterns on Weekends and Weekdays, Imputed")
+```
+
+## Submitting the Assignment
+
+To submit the assignment:
+
+* Commit the your completed PA1_template.Rmd file to the master branch of your git repository (you should already be on the master branch unless you created new ones)
+
+* Commit your PA1_template.md and PA1_template.html files produced by processing your R markdown file with knit2html() function in R (from the knitr package) by running the function from the console.
+
++ If your document has figures included (it should) then they should have been placed in the figure/ directory by default (unless you overrided the default). Add and commit the figure/ directory to yoru git repository so that the figures appear in the markdown file when it displays on github.
+
+* Push your master branch to GitHub.
+
++ Submit the URL to your GitHub repository for this assignment on the course web site.
+
++ In addition to submitting the URL for your GitHub repository, you will need to submit the 40 character SHA-1 hash (as string of numbers from 0-9 and letters from a-f) that identifies the repository commit that contains the version of the files you want to submit. You can do this in GitHub by doing the following
+
+```{r final_information, echo = TRUE}
+sessionInfo()
+```
