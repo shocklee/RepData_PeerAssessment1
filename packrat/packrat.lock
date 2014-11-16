@@ -9,6 +9,12 @@ Source: CRAN
 Version: 1.3-3.3
 Hash: e42d3814a877cf587e6a5225486323c3
 
+Package: Amelia
+Source: CRAN
+Version: 1.7.2
+Hash: bbdb88f6dd78292ac0a7eda1a9925977
+Requires: Rcpp, RcppArmadillo
+
 Package: bitops
 Source: CRAN
 Version: 1.0-6
@@ -66,6 +72,7 @@ Package: hexbin
 Source: CRAN
 Version: 1.27.0
 Hash: 160017fb005a908def7938ba43ed02c3
+Requires: lattice
 
 Package: highr
 Source: CRAN
@@ -76,7 +83,7 @@ Package: Hmisc
 Source: CRAN
 Version: 3.14-5
 Hash: d5f94e52a736d120b77f82db6c399bba
-Requires: acepack, Formula, latticeExtra
+Requires: acepack, Formula, lattice, latticeExtra
 
 Package: htmltools
 Source: CRAN
@@ -94,6 +101,11 @@ Package: labeling
 Source: CRAN
 Version: 0.3
 Hash: 568a992912caf7eeddfb121924154047
+
+Package: lattice
+Source: CRAN
+Version: 0.20-29
+Hash: 17e9fe582d11197544a5ec817a80b21e
 
 Package: latticeExtra
 Source: CRAN
@@ -115,7 +127,7 @@ Package: maptools
 Source: CRAN
 Version: 0.8-30
 Hash: 103c8ad3262b5bc7280d620ed8302328
-Requires: sp
+Requires: lattice, sp
 
 Package: markdown
 Source: CRAN
@@ -153,7 +165,7 @@ Hash: 5716097644904b9c1b4be2692de16005
 Package: plyr
 Source: CRAN
 Version: 1.8.1
-Hash: ee306ab6181b4dea332b494c53d8cc51
+Hash: 6a287219196e18bc6261dc11b41b1ca0
 Requires: Rcpp
 
 Package: proto
@@ -175,11 +187,18 @@ Hash: 6a849b729bec970204ca88b96906adbc
 Package: Rcpp
 Source: CRAN
 Version: 0.11.3
+Hash: d9cc0a13885961b2d004cf73b0fb68dd
+
+Package: RcppArmadillo
+Source: CRAN
+Version: 0.4.500.0
+Hash: 91241987e86a016c76da5dec4f9b8177
+Requires: Rcpp
 
 Package: reshape2
 Source: CRAN
 Version: 1.4
-Hash: 5b527091bc1334eac9e08ea2b544aa13
+Hash: e50809918ebb73dff47de17d36d12975
 Requires: plyr, Rcpp, stringr
 
 Package: rmarkdown
@@ -207,6 +226,7 @@ Package: sp
 Source: CRAN
 Version: 1.0-16
 Hash: 1ec8e2e48ab1a6a12ba2b9754a860ed4
+Requires: lattice
 
 Package: SparseM
 Source: CRAN
@@ -238,3 +258,4 @@ Package: zoo
 Source: CRAN
 Version: 1.7-11
 Hash: a412b124ff249b078d9cd870de913c90
+Requires: lattice

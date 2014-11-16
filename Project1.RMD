@@ -7,7 +7,10 @@ output: html_document
 
 ## Setup
 
-```{r load_packages, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+```{r global_options, include=TRUE}
+require(knitr)
+opts_chunk$set(fig.width=12, fig.height=8, fig.path='./figure',
+               echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
 ## Loading and preprocessing the data
@@ -151,6 +154,7 @@ summary(amelia_out$imputations[[5]])
 
 ```{r conventional_imputation, echo = TRUE}
 imputed_activity <- activity #Make a copy
+imputed_activity[!complete.cases(imputed_activity),]
 
 ```
 
@@ -209,6 +213,13 @@ xyplot(activity_by_interval$x ~ activity_by_interval$interval
        xlab = "5-minute Interval",
        ylab = "Number of Steps",
        main = "Activity Patterns on Weekends and Weekdays, Imputed")
+dev.copy(png, 
+         filename = "./figure/plot3.png", 
+         width = 480, 
+         height = 480, 
+         units = "px", 
+         bg = "white")
+dev.off()
 ```
 
 ## Submitting the Assignment
